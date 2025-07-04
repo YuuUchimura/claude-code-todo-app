@@ -16,6 +16,8 @@ A modern, responsive Todo application built with Next.js App Router and deployed
 - **Deployment**: Cloudflare Pages/Workers
 - **Language**: TypeScript
 - **Package Manager**: bun
+- **Code Formatter**: Biome
+- **Git Hooks**: Lefthook
 
 ## Architecture Design
 
@@ -85,7 +87,7 @@ src/
 - Use 2-space indentation
 - Prefer single quotes for strings
 - Always use semicolons
-- Sort imports: React → Next.js → Third-party → Local
+- Sort imports: React → Next.js → Third-party → Local (handled by Biome)
 
 ### Component Patterns
 
@@ -244,7 +246,8 @@ bun preview             # Preview deployment locally
 bun lint                # Run ESLint
 bun lint:fix            # Fix ESLint issues
 bun type-check          # Run TypeScript compiler
-bun format              # Format with Prettier
+bun format              # Format with Biome
+bun format:check        # Check formatting with Biome
 ```
 
 ## API Routes
@@ -314,3 +317,45 @@ DELETE /api/todos/:id   # Delete todo
 - Maintain 4.5:1 color contrast ratio
 - Test with screen readers
 - Implement focus management for modals
+
+## Code Quality Tools
+
+### Biome Configuration
+Biome is used for both linting and formatting. Configure in `biome.json`:
+- Enable formatting with 2-space indentation
+- Sort imports automatically
+- Enforce single quotes
+- Add trailing commas
+- Configure linting rules for React and TypeScript
+
+### Lefthook Pre-commit Hooks
+Lefthook runs automated checks before each commit:
+- **Format check**: `bun format:check`
+- **Lint check**: `bun lint`
+- **Type check**: `bun type-check`
+- **Test**: `bun test` (only for changed files)
+- **Build check**: `bun run build` (optional, for critical changes)
+
+Configure in `lefthook.yml`:
+```yaml
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      run: bun format:check
+    lint:
+      run: bun lint
+    types:
+      run: bun type-check
+    tests:
+      run: bun test --run --changed
+```
+
+### Git Workflow
+1. Make changes to code
+2. Stage changes: `git add .`
+3. Commit: `git commit -m "message"`
+4. Lefthook automatically runs all checks
+5. If any check fails, the commit is blocked
+6. Fix issues and try again
+7. All checks must pass before commit succeeds
